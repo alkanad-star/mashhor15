@@ -377,278 +377,6 @@ $failed_orders_count = $conn->query("SELECT COUNT(*) as count FROM orders WHERE 
                                         </div>
                                     </td>
                                 </tr>
-                                
-                                <!-- Order Update Modal -->
-                                <div class="modal fade" id="orderModal<?php echo $order['id']; ?>" tabindex="-1" aria-labelledby="orderModalLabel<?php echo $order['id']; ?>" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="orderModalLabel<?php echo $order['id']; ?>">تحديث حالة الطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">المستخدم</label>
-                                                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($order['username']); ?>" readonly>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الخدمة</label>
-                                                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($order['service_name']); ?>" readonly>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الكمية</label>
-                                                        <input type="text" class="form-control" value="<?php echo number_format($order['quantity'] ?? 0); ?>" readonly>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الرابط المستهدف</label>
-                                                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($order['target_url'] ?? ''); ?>" readonly>
-                                                        <div class="mt-2">
-                                                            <a href="<?php echo htmlspecialchars($order['target_url'] ?? '#'); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                                <i class="fas fa-external-link-alt me-1"></i> فتح الرابط
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="status<?php echo $order['id']; ?>" class="form-label">الحالة</label>
-                                                        <select class="form-select" id="status<?php echo $order['id']; ?>" name="status" required>
-                                                            <option value="pending" <?php echo ($order['status'] ?? '') === 'pending' ? 'selected' : ''; ?>>قيد الانتظار</option>
-                                                            <option value="processing" <?php echo ($order['status'] ?? '') === 'processing' ? 'selected' : ''; ?>>قيد التنفيذ</option>
-                                                            <option value="completed" <?php echo ($order['status'] ?? '') === 'completed' ? 'selected' : ''; ?>>مكتمل</option>
-                                                            <option value="partial" <?php echo ($order['status'] ?? '') === 'partial' ? 'selected' : ''; ?>>جزئي</option>
-                                                            <option value="cancelled" <?php echo ($order['status'] ?? '') === 'cancelled' ? 'selected' : ''; ?>>ملغي</option>
-                                                            <option value="failed" <?php echo ($order['status'] ?? '') === 'failed' ? 'selected' : ''; ?>>فشل</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="mb-3 start-count-field" id="startCountField<?php echo $order['id']; ?>" style="display: none;">
-                                                        <label for="start_count<?php echo $order['id']; ?>" class="form-label">العدد الأولي</label>
-                                                        <input type="number" class="form-control" id="start_count<?php echo $order['id']; ?>" name="start_count" min="0" value="<?php echo $order['start_count'] ?? 0; ?>">
-                                                        <div class="form-text">أدخل العدد الأولي للمتابعين/المشاهدات قبل بدء الخدمة.</div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3 partial-remains-field" id="partialRemains<?php echo $order['id']; ?>" style="display: <?php echo ($order['status'] ?? '') === 'partial' ? 'block' : 'none'; ?>;">
-                                                        <label for="remains<?php echo $order['id']; ?>" class="form-label">الكمية المتبقية</label>
-                                                        <input type="number" class="form-control" id="remains<?php echo $order['id']; ?>" name="remains" value="<?php echo $order['remains'] ?? 0; ?>" min="1" max="<?php echo isset($order['quantity']) ? $order['quantity'] - 1 : 0; ?>">
-                                                        <div class="form-text">يجب أن تكون الكمية المتبقية أقل من الكمية الإجمالية.</div>
-                                                    </div>
-                                                    
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" name="update_order_status" class="btn btn-primary">تحديث الحالة</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Order Details Modal -->
-                                <div class="modal fade" id="orderDetailsModal<?php echo $order['id']; ?>" tabindex="-1" aria-labelledby="orderDetailsModalLabel<?php echo $order['id']; ?>" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="orderDetailsModalLabel<?php echo $order['id']; ?>">تفاصيل الطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <p><strong>رقم الطلب:</strong> <?php echo $order['id']; ?></p>
-                                                        <p><strong>المستخدم:</strong> <a href="admin.php?section=users&action=view&id=<?php echo $order['user_id']; ?>"><?php echo htmlspecialchars($order['username']); ?></a></p>
-                                                        <p><strong>الخدمة:</strong> <?php echo htmlspecialchars($order['service_name']); ?></p>
-                                                        <p><strong>الكمية:</strong> <?php echo number_format($order['quantity'] ?? 0); ?></p>
-                                                        <p><strong>المبلغ:</strong> $<?php echo number_format($order['amount'] ?? 0, 2); ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p><strong>الحالة:</strong> <span class="badge <?php echo $status_class; ?>"><?php echo $status_text; ?></span></p>
-                                                        <p><strong>تاريخ الطلب:</strong> <?php echo isset($order['created_at']) ? date('Y-m-d H:i', strtotime($order['created_at'])) : ''; ?></p>
-                                                        <p><strong>آخر تحديث:</strong> <?php echo isset($order['updated_at']) ? date('Y-m-d H:i', strtotime($order['updated_at'])) : ''; ?></p>
-                                                        <p><strong>الرابط المستهدف:</strong> <a href="<?php echo htmlspecialchars($order['target_url'] ?? ''); ?>" target="_blank"><?php echo htmlspecialchars($order['target_url'] ?? ''); ?></a></p>
-                                                        <p><strong>العدد الأولي:</strong> <?php echo number_format($order['start_count'] ?? 0); ?></p>
-                                                        
-                                                        <?php if (isset($order['status']) && $order['status'] === 'partial'): ?>
-                                                        <p><strong>المتبقي:</strong> <?php echo number_format($order['remains'] ?? 0); ?></p>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                                
-                                                <?php if (isset($order['status']) && ($order['status'] === 'partial' || $order['status'] === 'processing')): ?>
-                                                <div class="mt-4">
-                                                    <h6>تقدم الطلب</h6>
-                                                    <div class="progress">
-                                                        <?php 
-                                                        $progress = 0;
-                                                        if ($order['status'] === 'partial' && isset($order['quantity']) && isset($order['remains']) && $order['quantity'] > 0) {
-                                                            $progress = round((($order['quantity'] - $order['remains']) / $order['quantity']) * 100);
-                                                        } elseif ($order['status'] === 'processing') {
-                                                            $progress = 50; // Processing is halfway
-                                                        } elseif ($order['status'] === 'completed') {
-                                                            $progress = 100;
-                                                        }
-                                                        ?>
-                                                        <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"><?php echo $progress; ?>%</div>
-                                                    </div>
-                                                </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
-                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal<?php echo $order['id']; ?>" data-bs-dismiss="modal">
-                                                    <i class="fas fa-edit me-1"></i> تحديث الحالة
-                                                </button>
-                                                <a href="admin.php?section=notifications&user_id=<?php echo $order['user_id']; ?>" class="btn btn-warning">
-                                                    <i class="fas fa-bell me-1"></i> إرسال إشعار
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Start Processing Modal -->
-                                <div class="modal fade" id="startProcessingModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">بدء تنفيذ الطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>هل أنت متأكد من أنك تريد بدء تنفيذ هذا الطلب؟</p>
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    <input type="hidden" name="status" value="processing">
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="start_count_modal<?php echo $order['id']; ?>" class="form-label">العدد الأولي</label>
-                                                        <input type="number" class="form-control" id="start_count_modal<?php echo $order['id']; ?>" name="start_count" min="0" value="0">
-                                                        <div class="form-text">أدخل العدد الأولي للمتابعين/المشاهدات قبل بدء الخدمة.</div>
-                                                    </div>
-                                                    
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" name="update_order_status" class="btn btn-success">بدء التنفيذ</button>
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Cancel Order Modal -->
-                                <div class="modal fade" id="cancelOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">إلغاء الطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>هل أنت متأكد من أنك تريد إلغاء هذا الطلب؟ سيتم استرداد المبلغ للمستخدم.</p>
-                                                <div class="alert alert-warning">
-                                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    سيتم إعادة مبلغ $<?php echo number_format($order['amount'] ?? 0, 2); ?> إلى رصيد المستخدم <?php echo htmlspecialchars($order['username']); ?>.
-                                                </div>
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    <input type="hidden" name="status" value="cancelled">
-                                                    
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" name="update_order_status" class="btn btn-danger">تأكيد الإلغاء</button>
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Complete Order Modal -->
-                                <div class="modal fade" id="completeOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">إكمال الطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>هل أنت متأكد من أنك تريد تعيين حالة هذا الطلب كمكتمل؟</p>
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    <input type="hidden" name="status" value="completed">
-                                                    
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" name="update_order_status" class="btn btn-success">تأكيد الإكمال</button>
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Partial Order Modal -->
-                                <div class="modal fade" id="partialOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">تسليم جزئي للطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>استخدم هذا الخيار إذا لم تتمكن من إكمال الطلب بالكامل. سيتم استرداد المبلغ المتبقي للمستخدم.</p>
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    <input type="hidden" name="status" value="partial">
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="partial_remains<?php echo $order['id']; ?>" class="form-label">الكمية المتبقية</label>
-                                                        <input type="number" class="form-control" id="partial_remains<?php echo $order['id']; ?>" name="remains" min="1" max="<?php echo isset($order['quantity']) ? $order['quantity'] - 1 : 0; ?>" required>
-                                                        <div class="form-text">أدخل عدد الوحدات التي لم يتم تسليمها. يجب أن تكون أقل من إجمالي الكمية (<?php echo number_format($order['quantity'] ?? 0); ?>).</div>
-                                                    </div>
-                                                    
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" name="update_order_status" class="btn btn-primary">تأكيد التسليم الجزئي</button>
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Fail Order Modal -->
-                                <div class="modal fade" id="failOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">فشل الطلب #<?php echo $order['id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>هل أنت متأكد من أنك تريد تعيين حالة هذا الطلب كفاشل؟ سيتم استرداد المبلغ للمستخدم.</p>
-                                                <div class="alert alert-warning">
-                                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    سيتم إعادة مبلغ $<?php echo number_format($order['amount'] ?? 0, 2); ?> إلى رصيد المستخدم <?php echo htmlspecialchars($order['username']); ?>.
-                                                </div>
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                    <input type="hidden" name="status" value="failed">
-                                                    
-                                                    <div class="d-grid gap-2">
-                                                        <button type="submit" name="update_order_status" class="btn btn-danger">تأكيد الفشل</button>
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 <?php endwhile; ?>
                                 <?php else: ?>
                                 <tr>
@@ -741,7 +469,6 @@ $failed_orders_count = $conn->query("SELECT COUNT(*) as count FROM orders WHERE 
                 
                 <!-- Processing Orders Tab -->
                 <div class="tab-pane fade" id="processing-orders" role="tabpanel" aria-labelledby="processing-tab">
-                    <!-- Similar structure with processing orders query -->
                     <div class="table-responsive">
                         <table class="table table-hover datatable-orders" id="processingOrdersTable">
                             <thead>
@@ -823,7 +550,6 @@ $failed_orders_count = $conn->query("SELECT COUNT(*) as count FROM orders WHERE 
                     </div>
                 </div>
                 
-                <!-- Completed, Partial, Cancelled, and Failed Tabs (similar structure) -->
                 <!-- Completed Orders Tab -->
                 <div class="tab-pane fade" id="completed-orders" role="tabpanel" aria-labelledby="completed-tab">
                     <div class="table-responsive">
@@ -1126,6 +852,331 @@ $failed_orders_count = $conn->query("SELECT COUNT(*) as count FROM orders WHERE 
             </div>
         </div>
     </div>
+
+    <!-- Order Modals Container - All modals are extracted here -->
+    <div id="order-modals-container">
+        <?php
+        // Get ALL orders to create modals for them
+        $all_modals_query = "SELECT o.*, s.name as service_name, u.username 
+                           FROM orders o 
+                           JOIN services s ON o.service_id = s.id 
+                           JOIN users u ON o.user_id = u.id 
+                           ORDER BY o.created_at DESC";
+        $all_modals_result = $conn->query($all_modals_query);
+        
+        if ($all_modals_result && $all_modals_result->num_rows > 0):
+            while ($order = $all_modals_result->fetch_assoc()):
+                // Determine status class and text
+                $status_class = '';
+                $status_text = '';
+                
+                switch ($order['status'] ?? '') {
+                    case 'pending':
+                        $status_class = 'bg-warning';
+                        $status_text = 'قيد الانتظار';
+                        break;
+                    case 'processing':
+                        $status_class = 'bg-info';
+                        $status_text = 'قيد التنفيذ';
+                        break;
+                    case 'completed':
+                        $status_class = 'bg-success';
+                        $status_text = 'مكتمل';
+                        break;
+                    case 'cancelled':
+                        $status_class = 'bg-secondary';
+                        $status_text = 'ملغي';
+                        break;
+                    case 'failed':
+                        $status_class = 'bg-danger';
+                        $status_text = 'فشل';
+                        break;
+                    case 'partial':
+                        $status_class = 'bg-primary';
+                        $status_text = 'جزئي';
+                        break;
+                    default:
+                        $status_class = 'bg-secondary';
+                        $status_text = 'غير معروف';
+                }
+        ?>
+        
+        <!-- Order Update Modal -->
+        <div class="modal fade" id="orderModal<?php echo $order['id']; ?>" tabindex="-1" aria-labelledby="orderModalLabel<?php echo $order['id']; ?>" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="orderModalLabel<?php echo $order['id']; ?>">تحديث حالة الطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="">
+                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">المستخدم</label>
+                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($order['username']); ?>" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">الخدمة</label>
+                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($order['service_name']); ?>" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">الكمية</label>
+                                <input type="text" class="form-control" value="<?php echo number_format($order['quantity'] ?? 0); ?>" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">الرابط المستهدف</label>
+                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($order['target_url'] ?? ''); ?>" readonly>
+                                <div class="mt-2">
+                                    <a href="<?php echo htmlspecialchars($order['target_url'] ?? '#'); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i> فتح الرابط
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="status<?php echo $order['id']; ?>" class="form-label">الحالة</label>
+                                <select class="form-select" id="status<?php echo $order['id']; ?>" name="status" required>
+                                    <option value="pending" <?php echo ($order['status'] ?? '') === 'pending' ? 'selected' : ''; ?>>قيد الانتظار</option>
+                                    <option value="processing" <?php echo ($order['status'] ?? '') === 'processing' ? 'selected' : ''; ?>>قيد التنفيذ</option>
+                                    <option value="completed" <?php echo ($order['status'] ?? '') === 'completed' ? 'selected' : ''; ?>>مكتمل</option>
+                                    <option value="partial" <?php echo ($order['status'] ?? '') === 'partial' ? 'selected' : ''; ?>>جزئي</option>
+                                    <option value="cancelled" <?php echo ($order['status'] ?? '') === 'cancelled' ? 'selected' : ''; ?>>ملغي</option>
+                                    <option value="failed" <?php echo ($order['status'] ?? '') === 'failed' ? 'selected' : ''; ?>>فشل</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3 start-count-field" id="startCountField<?php echo $order['id']; ?>" style="display: <?php echo ($order['status'] ?? '') === 'processing' ? 'block' : 'none'; ?>;">
+                                <label for="start_count<?php echo $order['id']; ?>" class="form-label">العدد الأولي</label>
+                                <input type="number" class="form-control" id="start_count<?php echo $order['id']; ?>" name="start_count" min="0" value="<?php echo $order['start_count'] ?? 0; ?>">
+                                <div class="form-text">أدخل العدد الأولي للمتابعين/المشاهدات قبل بدء الخدمة.</div>
+                            </div>
+                            
+                            <div class="mb-3 partial-remains-field" id="partialRemains<?php echo $order['id']; ?>" style="display: <?php echo ($order['status'] ?? '') === 'partial' ? 'block' : 'none'; ?>;">
+                                <label for="remains<?php echo $order['id']; ?>" class="form-label">الكمية المتبقية</label>
+                                <input type="number" class="form-control" id="remains<?php echo $order['id']; ?>" name="remains" value="<?php echo $order['remains'] ?? 0; ?>" min="1" max="<?php echo isset($order['quantity']) ? $order['quantity'] - 1 : 0; ?>">
+                                <div class="form-text">يجب أن تكون الكمية المتبقية أقل من الكمية الإجمالية.</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="update_order_status" class="btn btn-primary">تحديث الحالة</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Details Modal -->
+        <div class="modal fade" id="orderDetailsModal<?php echo $order['id']; ?>" tabindex="-1" aria-labelledby="orderDetailsModalLabel<?php echo $order['id']; ?>" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="orderDetailsModalLabel<?php echo $order['id']; ?>">تفاصيل الطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>رقم الطلب:</strong> <?php echo $order['id']; ?></p>
+                                <p><strong>المستخدم:</strong> <a href="admin.php?section=users&action=view&id=<?php echo $order['user_id']; ?>"><?php echo htmlspecialchars($order['username']); ?></a></p>
+                                <p><strong>الخدمة:</strong> <?php echo htmlspecialchars($order['service_name']); ?></p>
+                                <p><strong>الكمية:</strong> <?php echo number_format($order['quantity'] ?? 0); ?></p>
+                                <p><strong>المبلغ:</strong> $<?php echo number_format($order['amount'] ?? 0, 2); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>الحالة:</strong> <span class="badge <?php echo $status_class; ?>"><?php echo $status_text; ?></span></p>
+                                <p><strong>تاريخ الطلب:</strong> <?php echo isset($order['created_at']) ? date('Y-m-d H:i', strtotime($order['created_at'])) : ''; ?></p>
+                                <p><strong>آخر تحديث:</strong> <?php echo isset($order['updated_at']) ? date('Y-m-d H:i', strtotime($order['updated_at'])) : ''; ?></p>
+                                <p><strong>الرابط المستهدف:</strong> <a href="<?php echo htmlspecialchars($order['target_url'] ?? ''); ?>" target="_blank"><?php echo htmlspecialchars($order['target_url'] ?? ''); ?></a></p>
+                                <p><strong>العدد الأولي:</strong> <?php echo number_format($order['start_count'] ?? 0); ?></p>
+                                
+                                <?php if (isset($order['status']) && $order['status'] === 'partial'): ?>
+                                <p><strong>المتبقي:</strong> <?php echo number_format($order['remains'] ?? 0); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <?php if (isset($order['status']) && ($order['status'] === 'partial' || $order['status'] === 'processing')): ?>
+                        <div class="mt-4">
+                            <h6>تقدم الطلب</h6>
+                            <div class="progress">
+                                <?php 
+                                $progress = 0;
+                                if ($order['status'] === 'partial' && isset($order['quantity']) && isset($order['remains']) && $order['quantity'] > 0) {
+                                    $progress = round((($order['quantity'] - $order['remains']) / $order['quantity']) * 100);
+                                } elseif ($order['status'] === 'processing') {
+                                    $progress = 50; // Processing is halfway
+                                } elseif ($order['status'] === 'completed') {
+                                    $progress = 100;
+                                }
+                                ?>
+                                <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo $progress; ?>%" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuemax="100"><?php echo $progress; ?>%</div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal<?php echo $order['id']; ?>" data-bs-dismiss="modal">
+                            <i class="fas fa-edit me-1"></i> تحديث الحالة
+                        </button>
+                        <a href="admin.php?section=notifications&user_id=<?php echo $order['user_id']; ?>" class="btn btn-warning">
+                            <i class="fas fa-bell me-1"></i> إرسال إشعار
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Start Processing Modal -->
+        <div class="modal fade" id="startProcessingModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">بدء تنفيذ الطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>هل أنت متأكد من أنك تريد بدء تنفيذ هذا الطلب؟</p>
+                        <form method="post" action="">
+                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <input type="hidden" name="status" value="processing">
+                            
+                            <div class="mb-3">
+                                <label for="start_count_modal<?php echo $order['id']; ?>" class="form-label">العدد الأولي</label>
+                                <input type="number" class="form-control" id="start_count_modal<?php echo $order['id']; ?>" name="start_count" min="0" value="0">
+                                <div class="form-text">أدخل العدد الأولي للمتابعين/المشاهدات قبل بدء الخدمة.</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="update_order_status" class="btn btn-success">بدء التنفيذ</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cancel Order Modal -->
+        <div class="modal fade" id="cancelOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">إلغاء الطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>هل أنت متأكد من أنك تريد إلغاء هذا الطلب؟ سيتم استرداد المبلغ للمستخدم.</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            سيتم إعادة مبلغ $<?php echo number_format($order['amount'] ?? 0, 2); ?> إلى رصيد المستخدم <?php echo htmlspecialchars($order['username']); ?>.
+                        </div>
+                        <form method="post" action="">
+                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <input type="hidden" name="status" value="cancelled">
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="update_order_status" class="btn btn-danger">تأكيد الإلغاء</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Complete Order Modal -->
+        <div class="modal fade" id="completeOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">إكمال الطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>هل أنت متأكد من أنك تريد تعيين حالة هذا الطلب كمكتمل؟</p>
+                        <form method="post" action="">
+                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <input type="hidden" name="status" value="completed">
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="update_order_status" class="btn btn-success">تأكيد الإكمال</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Partial Order Modal -->
+        <div class="modal fade" id="partialOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تسليم جزئي للطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>استخدم هذا الخيار إذا لم تتمكن من إكمال الطلب بالكامل. سيتم استرداد المبلغ المتبقي للمستخدم.</p>
+                        <form method="post" action="">
+                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <input type="hidden" name="status" value="partial">
+                            
+                            <div class="mb-3">
+                                <label for="partial_remains<?php echo $order['id']; ?>" class="form-label">الكمية المتبقية</label>
+                                <input type="number" class="form-control" id="partial_remains<?php echo $order['id']; ?>" name="remains" min="1" max="<?php echo isset($order['quantity']) ? $order['quantity'] - 1 : 0; ?>" required>
+                                <div class="form-text">أدخل عدد الوحدات التي لم يتم تسليمها. يجب أن تكون أقل من إجمالي الكمية (<?php echo number_format($order['quantity'] ?? 0); ?>).</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="update_order_status" class="btn btn-primary">تأكيد التسليم الجزئي</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fail Order Modal -->
+        <div class="modal fade" id="failOrderModal<?php echo $order['id']; ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">فشل الطلب #<?php echo $order['id']; ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>هل أنت متأكد من أنك تريد تعيين حالة هذا الطلب كفاشل؟ سيتم استرداد المبلغ للمستخدم.</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            سيتم إعادة مبلغ $<?php echo number_format($order['amount'] ?? 0, 2); ?> إلى رصيد المستخدم <?php echo htmlspecialchars($order['username']); ?>.
+                        </div>
+                        <form method="post" action="">
+                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <input type="hidden" name="status" value="failed">
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="update_order_status" class="btn btn-danger">تأكيد الفشل</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php 
+            endwhile;
+        endif;
+        ?>
+    </div>
 </div>
 
 <!-- JavaScript for handling orders page functionality -->
@@ -1201,7 +1252,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (matches.length > 0) {
                     let resultsHTML = '<div class="list-group">';
                     matches.forEach(match => {
-                        resultsHTML += `<a href="#order_${match.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center order-result">
+                        resultsHTML += `<a href="#order_${match.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center order-result" 
+                            data-id="${match.id}">
                             <div>
                                 <strong>#${match.id}</strong> - ${match.username}
                                 <small class="d-block text-muted">${match.service}</small>
@@ -1303,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // FIX: Initialize DataTables only when tabs become visible
+    // Initialize DataTables
     function initializeDataTable(tableId) {
         const table = document.getElementById(tableId);
         if (table && typeof $.fn.DataTable !== 'undefined') {
@@ -1319,16 +1371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 "pageLength": 25,
                 "order": [[0, "desc"]],
-                "responsive": true,
-                "drawCallback": function() {
-                    // Reinitialize Bootstrap 5 components after DataTable is drawn
-                    if (typeof bootstrap !== 'undefined') {
-                        // Reinitialize all modals in this table
-                        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(function(element) {
-                            new bootstrap.Modal(document.querySelector(element.dataset.bsTarget));
-                        });
-                    }
-                }
+                "responsive": true
             });
         }
     }
