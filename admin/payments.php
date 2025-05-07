@@ -82,6 +82,30 @@ $failed_payments_count = $conn->query($failed_payments_count_query)->fetch_assoc
         </div>
     </div>
     
+    <!-- Search Box -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="position-relative">
+                        <input type="text" class="form-control" id="paymentSearch" placeholder="ابحث باسم المستخدم أو طريقة الدفع أو رقم المعاملة...">
+                        <div id="searchResults" class="position-absolute w-100 bg-white border rounded shadow p-2 mt-1" style="display: none; z-index: 100; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-md-end">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshPayments">
+                            <i class="fas fa-sync-alt"></i> تحديث
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="exportPaymentsCSV">
+                            <i class="fas fa-file-export"></i> تصدير CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <ul class="nav nav-tabs" id="paymentsTab" role="tablist">
@@ -1035,6 +1059,154 @@ $(document).ready(function() {
         $('#downloadReceipt').attr('href', receiptUrl);
         $('#receiptModal').modal('show');
     });
+    
+    // Enhanced payment search functionality
+    const paymentSearch = $('#paymentSearch');
+    const searchResultsPayment = $('#searchResults');
+    
+    if (paymentSearch.length) {
+        paymentSearch.on('input', function() {
+            const searchTerm = $(this).val();
+            
+            // Only search if at least 2 characters
+            if (searchTerm.length >= 2) {
+                // Show loading indicator
+                searchResultsPayment.html('<div class="p-2 text-center"><i class="fas fa-spinner fa-spin"></i> جاري البحث...</div>');
+                searchResultsPayment.show();
+                
+                // Perform search on all visible rows in active tab
+                const activeTab = $('.tab-pane.active');
+                const rows = activeTab.find('tbody tr');
+                let matches = [];
+                
+                rows.each(function() {
+                    const id = $(this).find('td:nth-child(1)').text().toLowerCase();
+                    const username = $(this).find('td:nth-child(2)').text().toLowerCase();
+                    const paymentMethod = $(this).find('td:nth-child(4)').text().toLowerCase();
+                    
+                    if (id.includes(searchTerm.toLowerCase()) || 
+                        username.includes(searchTerm.toLowerCase()) || 
+                        paymentMethod.includes(searchTerm.toLowerCase())) {
+                        matches.push({
+                            id: $(this).find('td:nth-child(1)').text(),
+                            username: $(this).find('td:nth-child(2)').text().trim(),
+                            amount: $(this).find('td:nth-child(3)').text().trim(),
+                            paymentMethod: $(this).find('td:nth-child(4)').text().trim()
+                        });
+                    }
+                });
+                
+                // Display results
+                if (matches.length > 0) {
+                    let resultsHTML = '<div class="list-group">';
+                    matches.forEach(function(match) {
+                        resultsHTML += `<a href="#payment_${match.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center payment-result" 
+                                      data-id="${match.id}">
+                            <div>
+                                <strong>#${match.id}</strong> - ${match.username}
+                                <small class="d-block text-muted">${match.amount} - ${match.paymentMethod}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">عرض</span>
+                        </a>`;
+                    });
+                    resultsHTML += '</div>';
+                    searchResultsPayment.html(resultsHTML);
+                } else {
+                    searchResultsPayment.html('<div class="p-3 text-center text-muted">لا توجد نتائج</div>');
+                }
+            } else {
+                searchResultsPayment.hide();
+            }
+        });
+        
+        // Handle clicking outside the search results to hide them
+        $(document).on('click', function(e) {
+            if (!paymentSearch.is(e.target) && !searchResultsPayment.is(e.target) && searchResultsPayment.has(e.target).length === 0) {
+                searchResultsPayment.hide();
+            }
+        });
+        
+        // Handle selecting a payment from search results
+        $(document).on('click', '.payment-result', function(e) {
+            e.preventDefault();
+            const paymentId = $(this).data('id');
+            
+            // Find and highlight the row
+            const table = $('.tab-pane.active table');
+            const row = table.find(`td:contains(${paymentId})`).first().closest('tr');
+            
+            if (row.length) {
+                // Scroll to the row
+                $('html, body').animate({
+                    scrollTop: row.offset().top - 100
+                }, 500);
+                
+                // Highlight the row
+                row.addClass('highlight-row');
+                setTimeout(function() {
+                    row.removeClass('highlight-row');
+                }, 3000);
+            }
+            
+            // Hide search results
+            searchResultsPayment.hide();
+        });
+    }
+    
+    // Handle refresh button for payments
+    $('#refreshPayments').on('click', function() {
+        location.reload();
+    });
+    
+    // Export payments to CSV
+    $('#exportPaymentsCSV').on('click', function() {
+        const activeTab = $('.tab-pane.active');
+        const table = activeTab.find('table');
+        
+        let csv = [];
+        const rows = table.find('tr');
+        
+        rows.each(function() {
+            const cols = $(this).find('td, th');
+            let rowText = [];
+            
+            cols.each(function(index) {
+                // Skip the actions column
+                if (index !== cols.length - 1) {
+                    let text = $(this).text().replace(/"/g, '""').trim();
+                    rowText.push('"' + text + '"');
+                }
+            });
+            
+            csv.push(rowText.join(','));
+        });
+        
+        // Download CSV file
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const date = new Date().toISOString().slice(0, 10);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'payments_export_' + date + '.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+    
+    // Add highlight-row class if not already defined
+    if (!$('.highlight-row').length) {
+        $('<style>').prop('type', 'text/css')
+            .html(`
+                .highlight-row {
+                    background-color: rgba(0, 123, 255, 0.2) !important;
+                    transition: background-color 1s ease;
+                }
+            `)
+            .appendTo('head');
+    }
 });
 </script>
 
@@ -1144,6 +1316,12 @@ $(document).ready(function() {
 .nav-link .position-absolute {
     top: -8px !important;
     right: -8px !important;
+}
+
+/* Highlight selected row */
+.highlight-row {
+    background-color: rgba(0, 123, 255, 0.2) !important;
+    transition: background-color 1s ease;
 }
 
 /* Responsive table on small devices */
